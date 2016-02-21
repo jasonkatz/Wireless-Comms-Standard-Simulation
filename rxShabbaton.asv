@@ -32,4 +32,13 @@ rxBits = reshape(rx1.',numel(rx1),1);
 % Check the BER. If zero BER, output the # of correctly received bits.
 ber = biterr(rxBits, bits);
 
+%rxBits == bits
+
+if ber == 0
+    disp('Sucessful frame User 2')
+    numCorrect = length(bits);
+else 
+   %scatterplot(rx); 
+end
+
 end
