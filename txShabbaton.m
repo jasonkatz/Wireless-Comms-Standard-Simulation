@@ -1,9 +1,8 @@
-function [tx, bits, gain] = txShabbaton()
+function [tx, bits, gain] = txShabbaton(msgM)
 % ECE-408 Project 1 - Transmitter
 % Jessica Marshall, Elie Lerea and Jason Katz - Team Shabbaton
 % 802.11n Specification Implementation
 
-msgM = 2; % Select BPSK for my message signal
 k = log2(msgM);
 
 numChannels = 64;
@@ -37,8 +36,6 @@ msgOFDM = msgOFDM(:);
 % multiply upsample message by carrier  to get transmitted signal
 tx = msgOFDM.';
 
-% scale the output
 gain = std(tx);
-tx = tx./gain;
 
 end
