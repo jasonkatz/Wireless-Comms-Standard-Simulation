@@ -5,29 +5,48 @@ function [ber] = rxShabbaton(sig, bits, nSyms, msgM, chan)
 
 msgCode = [];
 
-numChannels = 64;
+numChannels = 56;
 
 rx = sig;
 
+% Invert the channel and filter
+chanInv = pinv(chan);
+rxFiltered = chanInv * rx;
+
 % Split up signal
-rxPart1 = rx(1, :);
-rxPart1 = reshape(rxPart1, numChannels + numChannels/4, nSyms / 2).';
-rxPart2 = rx(2, :);
-rxPart2 = reshape(rxPart2, numChannels + numChannels/4, nSyms / 2).';
+rxPart1 = rxFiltered(1, :);
+rxPart1 = reshape(rxPart1, 80, nSyms / 2).';
+rxPart2 = rxFiltered(2, :);
+rxPart2 = reshape(rxPart2, 80, nSyms / 2).';
 
+% Remove cyclic prefix
+rxPart1 = rxPart1(:,[17:80]);
+rxPart2 = rxPart2(:,[17:80]);
 
+% Inverse OFDM
+rxOFDM1 = fftshift(fft(rxPart1.')).';
+rxOFDM2 = fftshift(fft(rxPart2.')).';
 
-% Convert to properly sized matrix
-rx = reshape(rx, numChannels, length(rx)/numChannels);
+% Get rid of zero columns and reshape
+rx1 = rxOFDM1(:, [5:60]);
+rx2 = rxOFDM2(:, [5:60]);
+rx1 = reshape(rx1.', 1, numChannels * nSyms / 2);
+rx2 = reshape(rx2.', 1, numChannels * nSyms / 2);
 
-% Use fft to get data back using OFDM
-rx = fft(rx, numChannels);
+% Combine vectors
+rxMsg = [rx1 rx2];
 
-% Convert to column vector
-rx = rx(:);
+% % Convert to properly sized matrix
+% rx = reshape(rx, numChannels, length(rx)/numChannels);
+% 
+% % Use fft to get data back using OFDM
+% rx = fft(rx, numChannels);
+% 
+% % Convert to column vector
+% rx = rx(:);
 
-% Demod msgM-QAM
-rxMsg = qamdemod(rx,msgM);
+% QAM demod
+rxMsg = qamdemod(rxMsg, msgM);
 
 % Map Symbols to Bits
 rx1 = de2bi(rxMsg,'left-msb');
