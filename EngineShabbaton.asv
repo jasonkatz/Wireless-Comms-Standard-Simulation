@@ -8,7 +8,6 @@ msgM = 2; % Use BPSK
 k = log2(msgM);
 numTx = 2;
 numRx = 2;
-nSyms = 1e3; % Symbols per OFDM channel
 
 numIter = 10;
 
@@ -23,17 +22,17 @@ for index = 1:length(SNR_Vec)
     for i = 1:numIter
 
         % Get transmitted signal
-        [sig, bits, gain] = txShabbaton(msgM, nSyms);
+        [sig, bits, gain] = txShabbaton(msgM);
         
         % Create 2x2 matrix representing MIMO channels
         chan = 1/sqrt(2)*[randn(numRx, numTx) + j*randn(numRx, numTx)];
         
         % Filter data through channels and add noise
-        sigChan = chan * sig * sqrt(80/64);
-        sigNoisy = awgn(sigChan, SNR_Vec(index) + 10*log10(k), 'measured');
+         = sig * chan * sqrt(80/64);
+        
 
         % check the BER
-        berTotal = berTotal + rxShabbaton(sigNoisy, bits, nSyms, msgM, chan);
+        berTotal = berTotal + rxShabbaton(sumNoisy, bits, gain, msgM, chan);
     end
     
     berAvg = berTotal / numIter;

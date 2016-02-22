@@ -1,15 +1,21 @@
-function [ber] = rxShabbaton(sig, bits, gain, msgM)
+function [ber] = rxShabbaton(sig, bits, nSyms, msgM, chan)
 % ECE-408 Project 1 - Receiver
 % Jessica Marshall, Elie Lerea and Jason Katz - Team Shabbaton
 % 802.11n Specification Implementation
 
 msgCode = [];
 
+numChannels = 64;
+
 rx = sig;
 
-%% Recover your signal here
+% Split up signal
+rxPart1 = rx(1, :);
+rxPart1 = reshape(rxPart1, numChannels + numChannels/4, nSyms / 2).';
+rxPart2 = rx(2, :);
+rxPart2 = reshape(rxPart2, numChannels + numChannels/4, nSyms / 2).';
 
-numChannels = 64;
+
 
 % Convert to properly sized matrix
 rx = reshape(rx, numChannels, length(rx)/numChannels);
