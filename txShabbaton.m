@@ -28,8 +28,8 @@ msg1Full = [zeros(nSyms / 2, 4) msgTx1(:, [1:numChannels]) zeros(nSyms / 2, 4)];
 msg2Full = [zeros(nSyms / 2, 4) msgTx2(:, [1:numChannels]) zeros(nSyms / 2, 4)];
 
 % Use ifft to get orthogonal frequency vectors for OFDM
-msg1OFDM = ifft(fftshift(msg1Full.')).';
-msg2OFDM = ifft(fftshift(msg2Full.')).';
+msg1OFDM = ifft(msg1Full.').';
+msg2OFDM = ifft(msg2Full.').';
 
 % Add cyclic prefix
 msg1OFDM = [msg1OFDM(:,[49:64]) msg1OFDM];

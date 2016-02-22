@@ -24,8 +24,11 @@ rxPart1 = rxPart1(:,[17:80]);
 rxPart2 = rxPart2(:,[17:80]);
 
 % Inverse OFDM
-rxOFDM1 = fftshift(fft(rxPart1.')).';
-rxOFDM2 = fftshift(fft(rxPart2.')).';
+rxOFDM1 = fft(rxPart1.').';
+rxOFDM2 = fft(rxPart2.').';
+% Correct roundoff error in OFDM
+rxOFDM1 = round(rxOFDM1);
+rxOFDM2 = round(rxOFDM2);
 
 % Get rid of zero columns and reshape
 rx1 = rxOFDM1(:, [5:60]);
