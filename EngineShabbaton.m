@@ -7,6 +7,8 @@ sumForSpec = [];
 totalV = [];
 msgM = 2; % Use BPSK
 k = log2(msgM);
+numTx = 2;
+numRx = 2;
 
 numIter = 10;
 
@@ -22,7 +24,7 @@ for index = 1:length(SNR_Vec)
 
         % Transmitters
 
-        [sig, bits, gain] = txShabbaton(msgM);
+        [sig, bits, gain] = txShabbaton(msgM, numTx, numRx);
 
         sumNoisy = awgn(sig, SNR_Vec(index) + 10*log10(k), 'measured');
 

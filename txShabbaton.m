@@ -1,14 +1,15 @@
-function [tx, bits, gain] = txShabbaton(msgM)
+function [tx, bits, gain] = txShabbaton(msgM, numTx, numRx)
 % ECE-408 Project 1 - Transmitter
 % Jessica Marshall, Elie Lerea and Jason Katz - Team Shabbaton
 % 802.11n Specification Implementation
 
 k = log2(msgM);
 
-numChannels = 64;
+numChannels = 56; % Number of OFDM subcarrier channels
+nSyms = 1e3; % Symols per OFDM channel
 
 % Generate data (4096 - 16 channels ; 2048 - 8 channels ; 1024 - 4 channels
-bits = randi([0 1],numChannels * 128 * k,1); % Generate random bits, pass these out of function, unchanged
+bits = randi([0 1],numChannels * k * nSyms, 1); % Generate random bits, pass these out of function, unchanged
 
 code = bits;
 
@@ -18,17 +19,22 @@ syms = bi2de(reshape(code,k,length(code)/k).','left-msb')';
 % Random msgM-QAM Signal
 msg = qammod(syms, msgM);
 
-% % Check length
-% msglength = length(msg);
-% if(msglength ~= numChannels * 1024)
-%     error('You smurfed up')
-% end
+% Break up message into two parts
+msgTx1 = msg(1, 1:(length(msg) / 2));
+msgTx2 = msg(1, (length(msg) / 2 + 1):length(msg));
+msgTx1 = reshape(msgTx1, numChannels, length(msgTx1) / numChannels).';
+msgTx2 = reshape(msgTx2, numChannels, length(msgTx2) / numChannels).';
 
-% Interleave symbols between channels
-msg = reshape(msg, numChannels, length(msg)/numChannels);
+msg1Full = [zeros(nSyms / 2, 4) msgTx1(:, [1:numChannels/2]) zeros(nSyms / 2, 1) msgTx1(:, [numChannels/2 + 1:numChannels]) zeros(nSyms / 2, 3)] ;
+msg2Full = [zeros(nSyms / 2, 4) msgTx2(:, [1:numChannels/2]) zeros(nSyms / 2, 1) msgTx2(:, [numChannels/2 + 1:numChannels]) zeros(nSyms / 2, 3)] ;
 
 % Use ifft to get orthogonal frequency vectors for OFDM
-msgOFDM = ifft(msg, numChannels);
+msg1OFDM = ifft(fftshift(msg1Full.')).';
+msg2OFDM = ifft(fftshift(msg2Full.')).';
+
+% Add cyclic prefix
+msg1OFDM = [msg1OFDM(:,[49:64]) msg1OFDM];
+msg2OFDM = [msg2OFDM(:,[49:64]) msg2OFDM];
 
 % Convert to column vector
 msgOFDM = msgOFDM(:);
