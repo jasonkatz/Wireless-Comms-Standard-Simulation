@@ -10,6 +10,8 @@ numTx = 2;
 numRx = 2;
 nSyms = 1e3; % Symbols per OFDM channel
 
+isSISO = 1;
+
 numIter = 10;
 
 SNR_Vec = 0:2:16;
@@ -27,6 +29,11 @@ for index = 1:length(SNR_Vec)
         
         % Create 2x2 matrix representing MIMO channels
         chan = 1/sqrt(2)*[randn(numRx, numTx) + j*randn(numRx, numTx)];
+        
+        % Change the channel based on whether we use SISO or MIMO
+        if isSISO
+            chan = eye(2);
+        end
         
         % Filter data through channels and add noise
         sigChan = chan * sig * sqrt(80/64);
