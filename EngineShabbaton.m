@@ -1,3 +1,9 @@
+% ECE-408 Project 1
+% Jessica Marshall, Elie Lerea and Jason Katz - Team Shabbaton
+% 802.11n Specification Implementation
+% - MCS Index 0: 1 Spatial Stream; Rate 1/2 Code; BPSK Modulation
+% - MCS Index 8: 2 Spatial Streams; Rate 1/2 Code; BPSK Modulation
+
 clear all; clear global; clc; close all;
 dbstop if error;
 
@@ -10,6 +16,7 @@ numTx = 2;
 numRx = 2;
 nSyms = 1e3; % Symbols per OFDM channel
 
+% Change this value to toggle SISO or MIMO implementation
 isSISO = 1;
 
 numIter = 10;
@@ -37,7 +44,7 @@ for index = 1:length(SNR_Vec)
         
         % Filter data through channels and add noise
         sigChan = chan * sig * sqrt(80/64);
-        sigNoisy = awgn(sigChan, SNR_Vec(index) + 10*log10(k), 'measured');
+        sigNoisy = awgn(sigChan, SNR_Vec(index) + 10*log10(k));
 
         % check the BER
         berTotal = berTotal + rxShabbaton(sigNoisy, bits, nSyms, msgM, chan);

@@ -5,6 +5,8 @@ function [ber] = rxShabbaton(sig, bits, nSyms, msgM, chan)
 
 rx = sig;
 
+numChannels = 56; % Number of OFDM subcarrier channels
+
 % Invert the channel and filter
 chanInv = pinv(chan);
 rxFiltered = chanInv * rx;

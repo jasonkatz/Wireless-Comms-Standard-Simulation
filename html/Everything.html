@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Everything</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-02-22"><meta name="DC.source" content="Everything.m"><style type="text/css">
+      --><title>Everything</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-02-23"><meta name="DC.source" content="Everything.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -69,6 +69,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
   </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Simulation Setup</a></li><li><a href="#4">Transmitter Implementation</a></li><li><a href="#5">Create channel and send data</a></li><li><a href="#6">Receiver Implementation</a></li><li><a href="#7">Results Generation</a></li></ul></div><pre class="codeinput"><span class="comment">% ECE-408 Project 1</span>
 <span class="comment">% Jessica Marshall, Elie Lerea and Jason Katz - Team Shabbaton</span>
 <span class="comment">% 802.11n Specification Implementation</span>
+<span class="comment">% - MCS Index 0: 1 Spatial Stream; Rate 1/2 Code; BPSK Modulation</span>
+<span class="comment">% - MCS Index 8: 2 Spatial Streams; Rate 1/2 Code; BPSK Modulation</span>
 </pre><h2>Simulation Setup<a name="2"></a></h2><pre class="codeinput">clear <span class="string">all</span>; clear <span class="string">global</span>; clc; close <span class="string">all</span>;
 dbstop <span class="string">if</span> <span class="string">error</span>;
 
@@ -82,6 +84,7 @@ numRx = 2;
 nSyms = 1e3; <span class="comment">% Symbols per OFDM channel</span>
 
 <span class="comment">% Change this value to toggle SISO or MIMO implementation</span>
+<span class="comment">% (MCS indices 0 or 8, respectively)</span>
 isSISO = 1;
 
 numIter = 10;
@@ -148,7 +151,7 @@ berVec = zeros(numIter, length(SNR_Vec));
 
         <span class="comment">% Filter data through channels and add noise</span>
         sigChan = chan * sig * sqrt(80/64);
-        sigNoisy = awgn(sigChan, SNR_Vec(index) + 10*log10(k), <span class="string">'measured'</span>);
+        sigNoisy = awgn(sigChan, SNR_Vec(index) + 10*log10(k));
 </pre><h2>Receiver Implementation<a name="6"></a></h2><pre class="codeinput">        rx = sigNoisy;
 
         <span class="comment">% Invert the channel and filter</span>
@@ -202,23 +205,30 @@ berVec = zeros(numIter, length(SNR_Vec));
     totalV = [totalV berAvg];
 <span class="keyword">end</span>
 
-<span class="keyword">if</span> msgM == 2
-    berTheory = berawgn(SNR_Vec,<span class="string">'psk'</span>,2,<span class="string">'nondiff'</span>);
-<span class="keyword">else</span>
-    berTheory = berawgn(SNR_Vec, <span class="string">'qam'</span>, msgM);
+<span class="comment">% Generate BER plot for SISO simulation</span>
+<span class="keyword">if</span> isSISO
+    <span class="keyword">if</span> msgM == 2
+        berTheory = berawgn(SNR_Vec,<span class="string">'psk'</span>,2,<span class="string">'nondiff'</span>);
+    <span class="keyword">else</span>
+        berTheory = berawgn(SNR_Vec, <span class="string">'qam'</span>, msgM);
+    <span class="keyword">end</span>
+
+    semilogy(SNR_Vec, totalV);
+
+    hold <span class="string">on</span>;
+    semilogy(SNR_Vec,berTheory,<span class="string">'r'</span>);
+    legend(<span class="string">'SISO BER'</span>,<span class="string">'Theoretical BER'</span>);
+    xlabel(<span class="string">'SNR'</span>);
+    title(<span class="string">'SISO BER Curve vs. Theoretical BER Curve (BPSK)'</span>);
+    snapnow;
 <span class="keyword">end</span>
-
-semilogy(SNR_Vec, totalV)
-
-hold <span class="string">on</span>
-semilogy(SNR_Vec,berTheory,<span class="string">'r'</span>)
-legend(<span class="string">'BER'</span>,<span class="string">'Theoretical BER'</span>)
-xlabel(<span class="string">'SNR'</span>);
-</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="Everything_01.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 % ECE-408 Project 1
 % Jessica Marshall, Elie Lerea and Jason Katz - Team Shabbaton
 % 802.11n Specification Implementation
+% - MCS Index 0: 1 Spatial Stream; Rate 1/2 Code; BPSK Modulation
+% - MCS Index 8: 2 Spatial Streams; Rate 1/2 Code; BPSK Modulation
 
 %% Simulation Setup
 
@@ -235,6 +245,7 @@ numRx = 2;
 nSyms = 1e3; % Symbols per OFDM channel
 
 % Change this value to toggle SISO or MIMO implementation
+% (MCS indices 0 or 8, respectively)
 isSISO = 1;
 
 numIter = 10;
@@ -307,7 +318,7 @@ for index = 1:length(SNR_Vec)
         
         % Filter data through channels and add noise
         sigChan = chan * sig * sqrt(80/64);
-        sigNoisy = awgn(sigChan, SNR_Vec(index) + 10*log10(k), 'measured');
+        sigNoisy = awgn(sigChan, SNR_Vec(index) + 10*log10(k));
         
         %% Receiver Implementation
         
@@ -366,21 +377,22 @@ for index = 1:length(SNR_Vec)
     totalV = [totalV berAvg];
 end
 
-if msgM == 2
-    berTheory = berawgn(SNR_Vec,'psk',2,'nondiff');
-else
-    berTheory = berawgn(SNR_Vec, 'qam', msgM);
+% Generate BER plot for SISO simulation
+if isSISO
+    if msgM == 2
+        berTheory = berawgn(SNR_Vec,'psk',2,'nondiff');
+    else
+        berTheory = berawgn(SNR_Vec, 'qam', msgM);
+    end
+
+    semilogy(SNR_Vec, totalV);
+
+    hold on;
+    semilogy(SNR_Vec,berTheory,'r');
+    legend('SISO BER','Theoretical BER');
+    xlabel('SNR');
+    title('SISO BER Curve vs. Theoretical BER Curve (BPSK)');
+    snapnow;
 end
-
-semilogy(SNR_Vec, totalV)
-
-hold on
-semilogy(SNR_Vec,berTheory,'r')
-legend('BER','Theoretical BER')
-xlabel('SNR');
-
-
-
-
 ##### SOURCE END #####
 --></body></html>
