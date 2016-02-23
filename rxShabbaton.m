@@ -3,10 +3,6 @@ function [ber] = rxShabbaton(sig, bits, nSyms, msgM, chan)
 % Jessica Marshall, Elie Lerea and Jason Katz - Team Shabbaton
 % 802.11n Specification Implementation
 
-msgCode = [];
-
-numChannels = 56;
-
 rx = sig;
 
 % Invert the channel and filter

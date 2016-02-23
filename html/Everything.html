@@ -1,0 +1,386 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Everything</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-02-22"><meta name="DC.source" content="Everything.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Simulation Setup</a></li><li><a href="#4">Transmitter Implementation</a></li><li><a href="#5">Create channel and send data</a></li><li><a href="#6">Receiver Implementation</a></li><li><a href="#7">Results Generation</a></li></ul></div><pre class="codeinput"><span class="comment">% ECE-408 Project 1</span>
+<span class="comment">% Jessica Marshall, Elie Lerea and Jason Katz - Team Shabbaton</span>
+<span class="comment">% 802.11n Specification Implementation</span>
+</pre><h2>Simulation Setup<a name="2"></a></h2><pre class="codeinput">clear <span class="string">all</span>; clear <span class="string">global</span>; clc; close <span class="string">all</span>;
+dbstop <span class="string">if</span> <span class="string">error</span>;
+
+<span class="comment">% Sampling freq for specgram</span>
+Fs = 120e4;
+totalV = [];
+msgM = 2; <span class="comment">% Use BPSK</span>
+k = log2(msgM);
+numTx = 2;
+numRx = 2;
+nSyms = 1e3; <span class="comment">% Symbols per OFDM channel</span>
+
+<span class="comment">% Change this value to toggle SISO or MIMO implementation</span>
+isSISO = 1;
+
+numIter = 10;
+
+SNR_Vec = 0:2:16;
+
+<span class="comment">% Create a vector to store the BER computed during each iteration</span>
+berVec = zeros(numIter, length(SNR_Vec));
+
+<span class="keyword">for</span> index = 1:length(SNR_Vec)
+    berTotal = 0;
+
+    <span class="keyword">for</span> i = 1:numIter
+</pre><h2>Transmitter Implementation<a name="4"></a></h2><pre class="codeinput">        numChannels = 56; <span class="comment">% Number of OFDM subcarrier channels</span>
+
+        <span class="comment">% Generate data (4096 - 16 channels ; 2048 - 8 channels ; 1024 - 4 channels</span>
+        bits = randi([0 1],numChannels * k * nSyms, 1); <span class="comment">% Generate random bits, pass these out of function, unchanged</span>
+
+        <span class="comment">% Rate 1/2 convolutional encode</span>
+        trellis = struct(<span class="string">'numInputSymbols'</span>,2,<span class="string">'numOutputSymbols'</span>,4,<span class="keyword">...</span>
+        <span class="string">'numStates'</span>,4,<span class="string">'nextStates'</span>,[0 2;0 2;1 3;1 3],<span class="keyword">...</span>
+        <span class="string">'outputs'</span>,[0 3;1 2;3 0;2 1]);
+        code = convenc(bits, trellis, 0); <span class="comment">% Encode bits</span>
+
+        <span class="comment">% Convert to symbols</span>
+        syms = bi2de(reshape(code,k,length(code)/k).',<span class="string">'left-msb'</span>)';
+
+        <span class="comment">% Random msgM-QAM Signal</span>
+        msg = qammod(syms, msgM);
+
+        <span class="comment">% Break up message into two parts</span>
+        msgTx1 = msg(1, 1:(length(msg) / 2));
+        msgTx2 = msg(1, (length(msg) / 2 + 1):length(msg));
+        msgTx1 = reshape(msgTx1, numChannels, length(msgTx1) / numChannels).';
+        msgTx2 = reshape(msgTx2, numChannels, length(msgTx2) / numChannels).';
+
+        msg1Full = [zeros(nSyms, 4) msgTx1(:, [1:numChannels]) zeros(nSyms, 4)];
+        msg2Full = [zeros(nSyms, 4) msgTx2(:, [1:numChannels]) zeros(nSyms, 4)];
+
+        <span class="comment">% Use ifft to get orthogonal frequency vectors for OFDM</span>
+        msg1OFDM = ifft(msg1Full.').';
+        msg2OFDM = ifft(msg2Full.').';
+
+        <span class="comment">% Add cyclic prefix</span>
+        msg1OFDM = [msg1OFDM(:,[49:64]) msg1OFDM];
+        msg2OFDM = [msg2OFDM(:,[49:64]) msg2OFDM];
+
+        <span class="comment">% Reshape</span>
+        tx1 = reshape(msg1OFDM, 1, nSyms * 80);
+        tx2 = reshape(msg2OFDM, 1, nSyms * 80);
+        tx = [tx1 ; tx2];
+
+        gain = std(tx');
+        tx = [tx(1, :) / gain(1) ; tx(2, :) / gain(2)];
+
+        sig = tx;
+</pre><h2>Create channel and send data<a name="5"></a></h2><pre class="codeinput">        <span class="comment">% Create 2x2 matrix representing MIMO channels</span>
+        chan = 1/sqrt(2)*[randn(numRx, numTx) + j*randn(numRx, numTx)];
+
+        <span class="comment">% Change the channel based on whether we use SISO or MIMO</span>
+        <span class="keyword">if</span> isSISO
+            chan = eye(2);
+        <span class="keyword">end</span>
+
+        <span class="comment">% Filter data through channels and add noise</span>
+        sigChan = chan * sig * sqrt(80/64);
+        sigNoisy = awgn(sigChan, SNR_Vec(index) + 10*log10(k), <span class="string">'measured'</span>);
+</pre><h2>Receiver Implementation<a name="6"></a></h2><pre class="codeinput">        rx = sigNoisy;
+
+        <span class="comment">% Invert the channel and filter</span>
+        chanInv = pinv(chan);
+        rxFiltered = chanInv * rx;
+
+        <span class="comment">% Split up signal</span>
+        rxPart1 = rxFiltered(1, :);
+        rxPart1 = reshape(rxPart1, nSyms, 80);
+        rxPart2 = rxFiltered(2, :);
+        rxPart2 = reshape(rxPart2, nSyms, 80);
+
+        <span class="comment">% Remove cyclic prefix</span>
+        rxPart1 = rxPart1(:,[17:80]);
+        rxPart2 = rxPart2(:,[17:80]);
+
+        <span class="comment">% Inverse OFDM</span>
+        rxOFDM1 = fft(rxPart1.').';
+        rxOFDM2 = fft(rxPart2.').';
+        <span class="comment">% Correct roundoff error in OFDM</span>
+        rxOFDM1 = round(rxOFDM1);
+        rxOFDM2 = round(rxOFDM2);
+
+        <span class="comment">% Get rid of zero columns and reshape</span>
+        rx1 = rxOFDM1(:, [5:60]);
+        rx2 = rxOFDM2(:, [5:60]);
+        rx1 = reshape(rx1.', 1, numChannels * nSyms);
+        rx2 = reshape(rx2.', 1, numChannels * nSyms);
+
+        <span class="comment">% Combine vectors</span>
+        rxMsg = [rx1 rx2];
+
+        <span class="comment">% QAM demod</span>
+        rxMsg = qamdemod(rxMsg, msgM);
+
+        <span class="comment">% Map Symbols to Bits</span>
+        rx1 = de2bi(rxMsg,<span class="string">'left-msb'</span>);
+        rxBits = reshape(rx1.',numel(rx1),1);
+
+        <span class="comment">% Rate 1/2 convolution decode</span>
+        rxBits = vitdec(rxBits, trellis, 10, <span class="string">'trunc'</span>, <span class="string">'hard'</span>);
+
+        <span class="comment">% Check the BER. If zero BER, output the # of correctly received bits.</span>
+        [zzz ber] = biterr(rxBits, bits);
+
+        berTotal = berTotal + ber;
+</pre><h2>Results Generation<a name="7"></a></h2><pre class="codeinput">    <span class="keyword">end</span>
+
+    berAvg = berTotal / numIter;
+
+    totalV = [totalV berAvg];
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> msgM == 2
+    berTheory = berawgn(SNR_Vec,<span class="string">'psk'</span>,2,<span class="string">'nondiff'</span>);
+<span class="keyword">else</span>
+    berTheory = berawgn(SNR_Vec, <span class="string">'qam'</span>, msgM);
+<span class="keyword">end</span>
+
+semilogy(SNR_Vec, totalV)
+
+hold <span class="string">on</span>
+semilogy(SNR_Vec,berTheory,<span class="string">'r'</span>)
+legend(<span class="string">'BER'</span>,<span class="string">'Theoretical BER'</span>)
+xlabel(<span class="string">'SNR'</span>);
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% ECE-408 Project 1
+% Jessica Marshall, Elie Lerea and Jason Katz - Team Shabbaton
+% 802.11n Specification Implementation
+
+%% Simulation Setup
+
+clear all; clear global; clc; close all;
+dbstop if error;
+
+% Sampling freq for specgram
+Fs = 120e4;
+totalV = [];
+msgM = 2; % Use BPSK
+k = log2(msgM);
+numTx = 2;
+numRx = 2;
+nSyms = 1e3; % Symbols per OFDM channel
+
+% Change this value to toggle SISO or MIMO implementation
+isSISO = 1;
+
+numIter = 10;
+
+SNR_Vec = 0:2:16;
+
+% Create a vector to store the BER computed during each iteration
+berVec = zeros(numIter, length(SNR_Vec));
+
+for index = 1:length(SNR_Vec)
+    berTotal = 0;
+    
+    for i = 1:numIter
+
+        %% Transmitter Implementation
+
+        numChannels = 56; % Number of OFDM subcarrier channels
+
+        % Generate data (4096 - 16 channels ; 2048 - 8 channels ; 1024 - 4 channels
+        bits = randi([0 1],numChannels * k * nSyms, 1); % Generate random bits, pass these out of function, unchanged
+
+        % Rate 1/2 convolutional encode
+        trellis = struct('numInputSymbols',2,'numOutputSymbols',4,...
+        'numStates',4,'nextStates',[0 2;0 2;1 3;1 3],...
+        'outputs',[0 3;1 2;3 0;2 1]);
+        code = convenc(bits, trellis, 0); % Encode bits
+
+        % Convert to symbols
+        syms = bi2de(reshape(code,k,length(code)/k).','left-msb')';
+
+        % Random msgM-QAM Signal
+        msg = qammod(syms, msgM);
+
+        % Break up message into two parts
+        msgTx1 = msg(1, 1:(length(msg) / 2));
+        msgTx2 = msg(1, (length(msg) / 2 + 1):length(msg));
+        msgTx1 = reshape(msgTx1, numChannels, length(msgTx1) / numChannels).';
+        msgTx2 = reshape(msgTx2, numChannels, length(msgTx2) / numChannels).';
+
+        msg1Full = [zeros(nSyms, 4) msgTx1(:, [1:numChannels]) zeros(nSyms, 4)];
+        msg2Full = [zeros(nSyms, 4) msgTx2(:, [1:numChannels]) zeros(nSyms, 4)];
+
+        % Use ifft to get orthogonal frequency vectors for OFDM
+        msg1OFDM = ifft(msg1Full.').';
+        msg2OFDM = ifft(msg2Full.').';
+
+        % Add cyclic prefix
+        msg1OFDM = [msg1OFDM(:,[49:64]) msg1OFDM];
+        msg2OFDM = [msg2OFDM(:,[49:64]) msg2OFDM];
+
+        % Reshape
+        tx1 = reshape(msg1OFDM, 1, nSyms * 80);
+        tx2 = reshape(msg2OFDM, 1, nSyms * 80);
+        tx = [tx1 ; tx2];
+
+        gain = std(tx');
+        tx = [tx(1, :) / gain(1) ; tx(2, :) / gain(2)];
+        
+        sig = tx;
+        
+        %% Create channel and send data
+        
+        % Create 2x2 matrix representing MIMO channels
+        chan = 1/sqrt(2)*[randn(numRx, numTx) + j*randn(numRx, numTx)];
+        
+        % Change the channel based on whether we use SISO or MIMO
+        if isSISO
+            chan = eye(2);
+        end
+        
+        % Filter data through channels and add noise
+        sigChan = chan * sig * sqrt(80/64);
+        sigNoisy = awgn(sigChan, SNR_Vec(index) + 10*log10(k), 'measured');
+        
+        %% Receiver Implementation
+        
+        rx = sigNoisy;
+
+        % Invert the channel and filter
+        chanInv = pinv(chan);
+        rxFiltered = chanInv * rx;
+
+        % Split up signal
+        rxPart1 = rxFiltered(1, :);
+        rxPart1 = reshape(rxPart1, nSyms, 80);
+        rxPart2 = rxFiltered(2, :);
+        rxPart2 = reshape(rxPart2, nSyms, 80);
+
+        % Remove cyclic prefix
+        rxPart1 = rxPart1(:,[17:80]);
+        rxPart2 = rxPart2(:,[17:80]);
+
+        % Inverse OFDM
+        rxOFDM1 = fft(rxPart1.').';
+        rxOFDM2 = fft(rxPart2.').';
+        % Correct roundoff error in OFDM
+        rxOFDM1 = round(rxOFDM1);
+        rxOFDM2 = round(rxOFDM2);
+
+        % Get rid of zero columns and reshape
+        rx1 = rxOFDM1(:, [5:60]);
+        rx2 = rxOFDM2(:, [5:60]);
+        rx1 = reshape(rx1.', 1, numChannels * nSyms);
+        rx2 = reshape(rx2.', 1, numChannels * nSyms);
+
+        % Combine vectors
+        rxMsg = [rx1 rx2];
+
+        % QAM demod
+        rxMsg = qamdemod(rxMsg, msgM);
+
+        % Map Symbols to Bits
+        rx1 = de2bi(rxMsg,'left-msb');
+        rxBits = reshape(rx1.',numel(rx1),1);
+
+        % Rate 1/2 convolution decode
+        rxBits = vitdec(rxBits, trellis, 10, 'trunc', 'hard');
+
+        % Check the BER. If zero BER, output the # of correctly received bits.
+        [zzz ber] = biterr(rxBits, bits);
+        
+        berTotal = berTotal + ber;
+
+        %% Results Generation
+    end
+    
+    berAvg = berTotal / numIter;
+    
+    totalV = [totalV berAvg];
+end
+
+if msgM == 2
+    berTheory = berawgn(SNR_Vec,'psk',2,'nondiff');
+else
+    berTheory = berawgn(SNR_Vec, 'qam', msgM);
+end
+
+semilogy(SNR_Vec, totalV)
+
+hold on
+semilogy(SNR_Vec,berTheory,'r')
+legend('BER','Theoretical BER')
+xlabel('SNR');
+
+
+
+
+##### SOURCE END #####
+--></body></html>
