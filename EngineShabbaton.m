@@ -4,7 +4,7 @@ dbstop if error;
 % Sampling freq for specgram
 Fs = 120e4;
 totalV = [];
-msgM = 2; % Use BPSK
+msgM = 8; % Use BPSK
 k = log2(msgM);
 numTx = 2;
 numRx = 2;

@@ -10,6 +10,7 @@ numChannels = 56; % Number of OFDM subcarrier channels
 % Generate data (4096 - 16 channels ; 2048 - 8 channels ; 1024 - 4 channels
 bits = randi([0 1],numChannels * k * nSyms, 1); % Generate random bits, pass these out of function, unchanged
 
+% Rate 1/2 convolutional code
 code = bits;
 
 % Convert to symbols
@@ -36,8 +37,11 @@ msg1OFDM = [msg1OFDM(:,[49:64]) msg1OFDM];
 msg2OFDM = [msg2OFDM(:,[49:64]) msg2OFDM];
 
 % Reshape
-tx = [reshape(msg1OFDM, 1, (nSyms / 2) * 80) ; reshape(msg2OFDM, 1, (nSyms / 2) * 80)];
+tx1 = reshape(msg1OFDM, 1, (nSyms / 2) * 80);
+tx2 = reshape(msg2OFDM, 1, (nSyms / 2) * 80);
+tx = [tx1 ; tx2];
 
-gain = std(tx);
+gain = std(tx');
+tx = [tx(1, :) / gain(1) ; tx(2, :) / gain(2)];
 
 end

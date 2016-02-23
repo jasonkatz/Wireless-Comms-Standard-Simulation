@@ -12,12 +12,13 @@ rx = sig;
 % Invert the channel and filter
 chanInv = pinv(chan);
 rxFiltered = chanInv * rx;
+rxFiltered = rx; %DELETE ME
 
 % Split up signal
 rxPart1 = rxFiltered(1, :);
-rxPart1 = reshape(rxPart1, 80, nSyms / 2).';
+rxPart1 = reshape(rxPart1, nSyms / 2, 80);
 rxPart2 = rxFiltered(2, :);
-rxPart2 = reshape(rxPart2, 80, nSyms / 2).';
+rxPart2 = reshape(rxPart2, nSyms / 2, 80);
 
 % Remove cyclic prefix
 rxPart1 = rxPart1(:,[17:80]);
@@ -38,15 +39,6 @@ rx2 = reshape(rx2.', 1, numChannels * nSyms / 2);
 
 % Combine vectors
 rxMsg = [rx1 rx2];
-
-% % Convert to properly sized matrix
-% rx = reshape(rx, numChannels, length(rx)/numChannels);
-% 
-% % Use fft to get data back using OFDM
-% rx = fft(rx, numChannels);
-% 
-% % Convert to column vector
-% rx = rx(:);
 
 % QAM demod
 rxMsg = qamdemod(rxMsg, msgM);
