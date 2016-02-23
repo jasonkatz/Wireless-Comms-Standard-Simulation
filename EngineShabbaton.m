@@ -33,7 +33,7 @@ for index = 1:length(SNR_Vec)
         sigNoisy = awgn(sigChan, SNR_Vec(index) + 10*log10(k), 'measured');
 
         % check the BER
-        berTotal = berTotal + rxShabbaton(sig, bits, nSyms, msgM, chan);
+        berTotal = berTotal + rxShabbaton(sigNoisy, bits, nSyms, msgM, chan);
     end
     
     berAvg = berTotal / numIter;

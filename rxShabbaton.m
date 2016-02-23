@@ -12,7 +12,6 @@ rx = sig;
 % Invert the channel and filter
 chanInv = pinv(chan);
 rxFiltered = chanInv * rx;
-rxFiltered = rx; %DELETE ME
 
 % Split up signal
 rxPart1 = rxFiltered(1, :);
